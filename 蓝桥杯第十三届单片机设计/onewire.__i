@@ -1,0 +1,1 @@
+"lib\onewire.c" BROWSE INCDIR(.\lib) DEBUG OBJECTEXTEND PRINT(.\onewire.lst) OBJECT(onewire.obj)

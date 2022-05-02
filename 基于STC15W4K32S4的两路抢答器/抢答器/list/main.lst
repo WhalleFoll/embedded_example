@@ -1,0 +1,247 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              07/10/2021 10:40:32 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\list\main.obj
+COMPILER INVOKED BY: D:\51\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\list\main.lst) OBJ
+                    -ECT(.\list\main.obj)
+
+line level    source
+
+   1          #include "config.h"
+   2          #include "USART1.h"
+   3          #include "delay.h"
+   4          #include "lcd1602.h"
+   5          #include "IIC.h"
+   6          #include "timer.h"
+   7          #include "GPIO.h"
+   8          
+   9          sbit k1=P4^0;
+  10          sbit k2=P4^2;
+  11          sbit k3=P4^5;
+  12          sbit k4=P4^7;
+  13          
+  14          sbit A0=P7^0;
+  15          sbit A1=P7^1;
+  16          sbit A2=P7^2;
+  17          sbit BEEP = P7^7;
+  18          
+  19          uchar code DSY_CODE[]=
+  20          {
+  21            0x90,0x80,0xf8,0x82,0x92,0x99,0xb0,0xa4,0xf9,0xc0
+  22          };
+  23          unsigned char dat1=0, dat2=0, dat3 =0;
+  24          unsigned char times=0,tim=0,start=0,off=0,kes=0;
+  25          
+  26          void UART_config(void);
+  27          void Timer_config(void);
+  28          uchar scan_key(void);
+  29          
+  30          void main(void)
+  31          {
+  32   1              u8      i;
+  33   1      
+  34   1              UART_config();
+  35   1              Timer_config();
+  36   1              EA = 1;
+  37   1           
+  38   1                  LCD_init(); 
+  39   1              s_connectionreset(); 
+  40   1              
+  41   1                  dat1 = Read_24C02(0x01);
+  42   1                  dat2 = Read_24C02(0x03);
+  43   1                      dat3 = Read_24C02(0x05);
+  44   1              
+  45   1              LCD_disp_str(0,1," Responder Game");
+  46   1                      LCD_disp_str(0,2,"A->");
+  47   1                  LCD_disp_str(5,2,"B->");
+  48   1              LCD_disp_char(3,2,dat1+'0');
+  49   1                  LCD_disp_char(8,2,dat2+'0');
+  50   1              
+  51   1                
+  52   1      //              Write_24C02(0x01, dat1);
+  53   1      //              delay_ms(100);
+  54   1      //              Write_24C02(0x03, dat2);
+C51 COMPILER V9.60.0.0   MAIN                                                              07/10/2021 10:40:32 PAGE 2   
+
+  55   1      //              delay_ms(100);
+  56   1      //              Write_24C02(0x05, dat3);
+  57   1                      
+  58   1                      BEEP = 0;
+  59   1                      
+  60   1                      
+  61   1              while (1)
+  62   1              {       
+  63   2      //              dat1++;
+  64   2      //              Write_24C02(0x01, dat1);
+  65   2      //              delay_ms(300);
+  66   2      //        dat1 = Read_24C02(0x01);
+  67   2      //              LCD_disp_char(3,2,dat1+'0');
+  68   2                      scan_key();
+  69   2                      if(dat1>=9) dat1=0;
+  70   2                      if(dat2>=9) dat2=0;
+  71   2                      //delay_ms(600);
+  72   2      
+  73   2                      
+  74   2                      if(COM1.RX_TimeOut > 0)         //超时计数
+  75   2                      {
+  76   3                              if(--COM1.RX_TimeOut == 0)
+  77   3                              {
+  78   4                                      if(COM1.RX_Cnt > 0)
+  79   4                                      {
+  80   5                                              for(i=0; i<COM1.RX_Cnt; i++)    TX1_write2buff(RX1_Buffer[i]);  //收到的数据原样返回
+  81   5                                      }
+  82   4                                      COM1.RX_Cnt = 0;
+  83   4                              }
+  84   3                      }
+  85   2              }
+  86   1      }
+  87          
+  88          uchar scan_key(void)
+  89          {
+  90   1           if(k1==0)
+  91   1                      {
+  92   2                              delay_ms(100);
+  93   2                              if(k1==0)
+  94   2                              {
+  95   3                                      A0=1;A1=1;A2=1;
+  96   3                                      start=1;
+  97   3                                      PrintString1("游戏开始!开始抢答\r\n");
+  98   3                              }               
+  99   2                      }
+ 100   1                      
+ 101   1              if((k2==0)&&(start==1))
+ 102   1              {
+ 103   2                 delay_ms(10);
+ 104   2                 if(k2==0)
+ 105   2                      {
+ 106   3                              A0=0;A1=0;A2=0;
+ 107   3                              kes=2;
+ 108   3                              off=1;
+ 109   3                              dat1++;
+ 110   3                              Write_24C02(0x01, dat1);
+ 111   3                              LCD_disp_char(3,2,dat1+'0');
+ 112   3                              PrintString1("A组抢答成功...\r\n");
+ 113   3                              BEEP = 1;
+ 114   3                              delay_ms(500);
+ 115   3                              BEEP = 0;
+ 116   3                      }
+C51 COMPILER V9.60.0.0   MAIN                                                              07/10/2021 10:40:32 PAGE 3   
+
+ 117   2              }
+ 118   1              if((k3==0)&&(start==1))
+ 119   1              {
+ 120   2                 delay_ms(10);
+ 121   2                 if(k3==0)
+ 122   2                      {
+ 123   3                              A0=1;A1=0;A2=0;
+ 124   3                              off=1;
+ 125   3                              dat2++;
+ 126   3                              kes=3;
+ 127   3                              Write_24C02(0x03, dat2);
+ 128   3                              LCD_disp_char(8,2,dat2+'0');
+ 129   3                              PrintString1("B组抢答成功...\r\n");
+ 130   3                              BEEP = 1;
+ 131   3                              delay_ms(500);
+ 132   3                              BEEP = 0;
+ 133   3                      }
+ 134   2              }
+ 135   1              if(k4==0)
+ 136   1              {
+ 137   2                 delay_ms(10);
+ 138   2                 if(k4==0)
+ 139   2                      {
+ 140   3                              dat1=dat2=0;
+ 141   3                              Write_24C02(0x01, dat1);
+ 142   3                              delay_ms(100);
+ 143   3                              Write_24C02(0x03, dat2);
+ 144   3                              delay_ms(100);
+ 145   3                              LCD_disp_char(3,2,dat1+'0');
+ 146   3                      LCD_disp_char(8,2,dat2+'0');
+ 147   3                      }
+ 148   2              }
+ 149   1      }
+*** WARNING C173 IN LINE 149 OF main.c: missing return-expression
+ 150          /*************  串口1初始化函数 *****************/
+ 151          void    UART_config(void)
+ 152          {
+ 153   1              COMx_InitDefine         COMx_InitStructure;                                     //结构定义
+ 154   1              COMx_InitStructure.UART_Mode      = UART_8bit_BRTx;             //模式,       UART_ShiftRight,UART_8bit_BRTx,UART_9b
+             -it,UART_9bit_BRTx
+ 155   1              COMx_InitStructure.UART_BRT_Use   = BRT_Timer2;                 //使用波特率,   BRT_Timer1, BRT_Timer2 (注意: 串口2固定
+             -使用BRT_Timer2)
+ 156   1              COMx_InitStructure.UART_BaudRate  = 9600ul;                     //波特率, 一般 110 ~ 115200
+ 157   1              COMx_InitStructure.UART_RxEnable  = ENABLE;                             //接收允许,   ENABLE或DISABLE
+ 158   1              COMx_InitStructure.BaudRateDouble = DISABLE;                    //波特率加倍, ENABLE或DISABLE
+ 159   1              COMx_InitStructure.UART_Interrupt = ENABLE;                             //中断允许,   ENABLE或DISABLE
+ 160   1              COMx_InitStructure.UART_Polity    = PolityLow;                  //中断优先级, PolityLow,PolityHigh
+ 161   1              COMx_InitStructure.UART_P_SW      = UART1_SW_P30_P31;   //切换端口,   UART1_SW_P30_P31,UART1_SW_P36_P37,UAR
+             -T1_SW_P16_P17(必须使用内部时钟)
+ 162   1              COMx_InitStructure.UART_RXD_TXD_Short = DISABLE;                //内部短路RXD与TXD, 做中继, ENABLE,DISABLE
+ 163   1              USART_Configuration(USART1, &COMx_InitStructure);               //初始化串口1 USART1,USART2
+ 164   1      
+ 165   1              PrintString1("STC15F2K60S2 UART1 Test Prgramme!\r\n");  //SUART1发送一个字符串
+ 166   1      }
+ 167          
+ 168          void Timer_config(void)
+ 169          {
+ 170   1              TIM_InitTypeDef         TIM_InitStructure;                                      //结构定义
+ 171   1              TIM_InitStructure.TIM_Mode      = TIM_16BitAutoReload;  //指定工作模式,   TIM_16BitAutoReload,TIM_16Bit,TI
+             -M_8BitAutoReload,TIM_16BitAutoReloadNoMask
+ 172   1              TIM_InitStructure.TIM_Polity    = PolityLow;                    //指定中断优先级, PolityHigh,PolityLow
+ 173   1              TIM_InitStructure.TIM_Interrupt = ENABLE;                               //中断是否允许,   ENABLE或DISABLE
+C51 COMPILER V9.60.0.0   MAIN                                                              07/10/2021 10:40:32 PAGE 4   
+
+ 174   1              TIM_InitStructure.TIM_ClkSource = TIM_CLOCK_1T;                 //指定时钟源, TIM_CLOCK_1T,TIM_CLOCK_12T,TIM_CLOCK_Ext
+ 175   1              TIM_InitStructure.TIM_ClkOut    = ENABLE;                               //是否输出高速脉冲, ENABLE或DISABLE
+ 176   1              TIM_InitStructure.TIM_Value     = 65536UL - (MAIN_Fosc / (50*12));              //初值,
+ 177   1              TIM_InitStructure.TIM_Run       = ENABLE;                               //是否初始化后启动定时器, ENABLE或DISABLE
+ 178   1              Timer_Inilize(Timer1,&TIM_InitStructure);                               //初始化Timer1    Timer0,Timer1,Timer2
+ 179   1      }
+ 180          
+ 181          /******************** IO配置函数 **************************/
+ 182          //void  GPIO_config(void)
+ 183          //{
+ 184          //      GPIO_InitTypeDef        GPIO_InitStructure;             //结构定义
+ 185          //      GPIO_InitStructure.Pin  = GPIO_Pin_0|GPIO_Pin_2|GPIO_Pin_5;             //指定要初始化的IO, GPIO_Pin_0 ~ GPIO_Pin_
+             -7, 或操作
+ 186          //      GPIO_InitStructure.Mode = GPIO_HighZ;           //指定IO的输入或输出方式,GPIO_PullUp,GPIO_HighZ,GPIO_OUT_OD,GPIO
+             -_OUT_PP
+ 187          //      GPIO_Inilize(GPIO_P2,&GPIO_InitStructure);      //初始化
+ 188          //}
+ 189          
+ 190          /********************* Timer1中断函数************************/
+ 191          void timer1_int (void) interrupt TIMER1_VECTOR //20ms
+ 192          {
+ 193   1       if(start==1)
+ 194   1       {
+ 195   2                 times++;
+ 196   2                 if(times>50)
+ 197   2                 {
+ 198   3                       times=0;
+ 199   3                       tim++;
+ 200   3                       P6= DSY_CODE[tim];
+ 201   3                       if((tim==9)||(off==1))
+ 202   3                               {start=0;
+ 203   4                                tim=0;
+ 204   4                                off=0;}
+ 205   3                               
+ 206   3                 }
+ 207   2       }
+ 208   1      
+ 209   1      }
+*** WARNING C290 IN LINE 149 OF main.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    570    ----
+   CONSTANT SIZE    =    124    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8      22
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

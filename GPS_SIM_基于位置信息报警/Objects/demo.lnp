@@ -1,0 +1,8 @@
+".\Objects\STARTUP.obj",
+".\Objects\ADLX345.obj",
+".\Objects\GPS.obj",
+".\Objects\GSM.obj",
+".\Objects\init.obj",
+".\Objects\main.obj" 
+TO ".\Objects\demo" 
+PRINT(".\Listings\demo.m51") RAMSIZE(256) 

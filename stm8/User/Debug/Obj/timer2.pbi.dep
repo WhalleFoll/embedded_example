@@ -1,0 +1,10 @@
+timer2.pbi: C:\Users\anyon\Desktop\MyProjectv2.0\Sys\timer2.c \
+  C:\Users\anyon\Desktop\MyProjectv2.0\Sys/timer2.h \
+  C:\Users\anyon\Desktop\MyProjectv2.0\Sys/sys.h \
+  D:\ruanjian\stm8\inc\iostm8s208mb.h D:\ruanjian\stm8\inc/io_macros.h \
+  D:\ruanjian\stm8\inc\c\stdio.h D:\ruanjian\stm8\inc\c\ycheck.h \
+  D:\ruanjian\stm8\inc\c\yvals.h D:\ruanjian\stm8\inc\c\DLib_Defaults.h \
+  D:\ruanjian\stm8\LIB\dlstm8smn.h D:\ruanjian\stm8\inc\c\DLib_Product.h \
+  D:\ruanjian\stm8\inc\c\xencoding_limits.h \
+  D:\ruanjian\stm8\inc\c\DLib_Threads.h D:\ruanjian\stm8\inc\c\ysizet.h \
+  D:\ruanjian\stm8\inc\c\ystdio.h

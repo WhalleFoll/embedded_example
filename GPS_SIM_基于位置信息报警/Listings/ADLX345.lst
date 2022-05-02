@@ -1,0 +1,464 @@
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE ADLX345
+OBJECT MODULE PLACED IN .\Objects\ADLX345.obj
+COMPILER INVOKED BY: D:\51\C51\BIN\C51.EXE ADLX345.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\ADLX345.lst) OBJECT(.\Objects\ADLX345.obj)
+
+line level    source
+
+   1          #include  <ADLX345.h>   
+   2          BYTE BUF[8];                         //接收数据缓存区           
+   3          uchar ge,shi,bai,qian,wan;           //显示变量
+   4          int  dis_data;                       //变量
+   5          float flag=2;
+   6          unsigned char a[4];
+   7          
+   8          //*********************************************************
+   9          void conversion(uint temp_data)  
+  10          {  
+  11   1          wan=temp_data/10000+0x30 ;
+  12   1          temp_data=temp_data%10000;   //取余运算
+  13   1              qian=temp_data/1000+0x30 ;
+  14   1          temp_data=temp_data%1000;    //取余运算
+  15   1          bai=temp_data/100+0x30   ;
+  16   1          temp_data=temp_data%100;     //取余运算
+  17   1          shi=temp_data/10+0x30    ;
+  18   1          temp_data=temp_data%10;      //取余运算
+  19   1          ge=temp_data+0x30; 
+  20   1            a[0]=qian;
+  21   1                a[1]=bai;
+  22   1                a[2]=shi;
+  23   1                a[3]=ge;
+  24   1      }
+  25          
+  26          /*******************************/
+  27          void delay1(unsigned int k)     
+  28          {                                               
+  29   1      unsigned int i,j;                               
+  30   1              for(i=0;i<k;i++)
+  31   1              {                       
+  32   2              for(j=0;j<121;j++)                      
+  33   2              {;}}                                            
+  34   1      }
+  35          /*******************************/
+  36          /*void WaitForEnable(void)      
+  37          {                                       
+  38                  DataPort=0xff;          
+  39                  LCM_RS=0;LCM_RW=1;_nop_();
+  40                  LCM_EN=1;_nop_();_nop_();
+  41                  while(DataPort&0x80);   
+  42                  LCM_EN=0;                               
+  43          }*/                                     
+  44          /*******************************/
+  45          /*void WriteCommandLCM(uchar CMD,uchar Attribc)
+  46          {                                       
+  47                  if(Attribc)WaitForEnable();     
+  48                  LCM_RS=0;LCM_RW=0;_nop_();
+  49                  DataPort=CMD;_nop_();   
+  50                  LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+  51          }       */                              
+  52          /*******************************/
+  53          /*void WriteDataLCM(uchar dataW)
+  54          {                                       
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 2   
+
+  55                  WaitForEnable();                
+  56                  LCM_RS=1;LCM_RW=0;_nop_();
+  57                  DataPort=dataW;_nop_(); 
+  58                  LCM_EN=1;_nop_();_nop_();LCM_EN=0;
+  59          }       */      
+  60          /***********************************/
+  61          /*void InitLcd()                                
+  62          {                       
+  63                  WriteCommandLCM(0x38,1);        
+  64                  WriteCommandLCM(0x08,1);        
+  65                  WriteCommandLCM(0x01,1);        
+  66                  WriteCommandLCM(0x06,1);        
+  67                  WriteCommandLCM(0x0c,1);
+  68          }       */              
+  69          /***********************************/
+  70          /*void DisplayOneChar(uchar X,uchar Y,uchar DData)
+  71          {                                               
+  72                  Y&=1;                                           
+  73                  X&=15;                                          
+  74                  if(Y)X|=0x40;                                   
+  75                  X|=0x80;                        
+  76                  WriteCommandLCM(X,0);           
+  77                  WriteDataLCM(DData);            
+  78          }       */                                      
+  79          
+  80          /**************************************
+  81          延时5微秒(STC90C52RC---12MHz---12T)
+  82          不同的工作环境,需要调整此函数，注意时钟过快时需要修改
+  83          当改用1T的MCU时,请调整此延时函数
+  84          **************************************/
+  85          void delay15us()
+  86          {
+  87   1          _nop_();_nop_();_nop_();_nop_();
+  88   1          _nop_();_nop_();_nop_();_nop_();
+  89   1              _nop_();_nop_();_nop_();_nop_();
+  90   1      }
+  91          
+  92          /**************************************
+  93          延时5毫秒(STC90C52RC@12M)
+  94          不同的工作环境,需要调整此函数
+  95          当改用1T的MCU时,请调整此延时函数
+  96          **************************************/
+  97          void delay15ms()
+  98          {
+  99   1          WORD n = 560;
+ 100   1      
+ 101   1          while (n--);
+ 102   1      }
+ 103          
+ 104          /**************************************
+ 105          起始信号
+ 106          **************************************/
+ 107          void ADXL345_Start()
+ 108          {
+ 109   1          SDA = 1;                    //拉高数据线
+ 110   1          SCL = 1;                    //拉高时钟线
+ 111   1          delay15us();                 //延时
+ 112   1          SDA = 0;                    //产生下降沿
+ 113   1          delay15us();                 //延时
+ 114   1          SCL = 0;                    //拉低时钟线
+ 115   1      }
+ 116          
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 3   
+
+ 117          /**************************************
+ 118          停止信号
+ 119          **************************************/
+ 120          void ADXL345_Stop()
+ 121          {
+ 122   1          SDA = 0;                    //拉低数据线
+ 123   1          SCL = 1;                    //拉高时钟线
+ 124   1          delay15us();                 //延时
+ 125   1          SDA = 1;                    //产生上升沿
+ 126   1          delay15us();                 //延时
+ 127   1      }
+ 128          
+ 129          /**************************************
+ 130          发送应答信号
+ 131          入口参数:ack (0:ACK 1:NAK)
+ 132          **************************************/
+ 133          void ADXL345_SendACK(bit ack)
+ 134          {
+ 135   1          SDA = ack;                  //写应答信号
+ 136   1          SCL = 1;                    //拉高时钟线
+ 137   1          delay15us();                 //延时
+ 138   1          SCL = 0;                    //拉低时钟线
+ 139   1          delay15us();                 //延时
+ 140   1      }
+ 141          
+ 142          /**************************************
+ 143          接收应答信号
+ 144          **************************************/
+ 145          bit ADXL345_RecvACK()
+ 146          {
+ 147   1          SCL = 1;                    //拉高时钟线
+ 148   1          delay15us();                 //延时
+ 149   1          CY = SDA;                   //读应答信号
+ 150   1          SCL = 0;                    //拉低时钟线
+ 151   1          delay15us();                 //延时
+ 152   1      
+ 153   1          return CY;
+ 154   1      }
+ 155          
+ 156          /**************************************
+ 157          向IIC总线发送一个字节数据
+ 158          **************************************/
+ 159          void ADXL345_SendByte(BYTE dat)
+ 160          {
+ 161   1          BYTE i;
+ 162   1      
+ 163   1          for (i=0; i<8; i++)         //8位计数器
+ 164   1          {
+ 165   2              dat <<= 1;              //移出数据的最高位
+ 166   2              SDA = CY;               //送数据口
+ 167   2              SCL = 1;                //拉高时钟线
+ 168   2              delay15us();             //延时
+ 169   2              SCL = 0;                //拉低时钟线
+ 170   2              delay15us();             //延时
+ 171   2          }
+ 172   1          ADXL345_RecvACK();
+ 173   1      }
+ 174          
+ 175          /**************************************
+ 176          从IIC总线接收一个字节数据
+ 177          **************************************/
+ 178          BYTE ADXL345_RecvByte()
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 4   
+
+ 179          {
+ 180   1          BYTE i;
+ 181   1          BYTE dat = 0;
+ 182   1      
+ 183   1          SDA = 1;                    //使能内部上拉,准备读取数据,
+ 184   1          for (i=0; i<8; i++)         //8位计数器
+ 185   1          {
+ 186   2              dat <<= 1;
+ 187   2              SCL = 1;                //拉高时钟线
+ 188   2              delay15us();             //延时
+ 189   2              dat |= SDA;             //读数据               
+ 190   2              SCL = 0;                //拉低时钟线
+ 191   2              delay15us();             //延时
+ 192   2          }
+ 193   1          return dat;
+ 194   1      }
+ 195          
+ 196          //******单字节写入*******************************************
+ 197          
+ 198          void Single_Write_ADXL345(uchar REG_Address,uchar REG_data)
+ 199          {
+ 200   1          ADXL345_Start();                  //起始信号
+ 201   1          ADXL345_SendByte(SlaveAddress);   //发送设备地址+写信号
+ 202   1          ADXL345_SendByte(REG_Address);    //内部寄存器地址，请参考中文pdf22页 
+ 203   1          ADXL345_SendByte(REG_data);       //内部寄存器数据，请参考中文pdf22页 
+ 204   1          ADXL345_Stop();                   //发送停止信号
+ 205   1      }
+ 206          
+ 207          //********单字节读取*****************************************
+ 208          uchar Single_Read_ADXL345(uchar REG_Address)
+ 209          {  uchar REG_data;
+ 210   1          ADXL345_Start();                          //起始信号
+ 211   1          ADXL345_SendByte(SlaveAddress);           //发送设备地址+写信号
+ 212   1          ADXL345_SendByte(REG_Address);            //发送存储单元地址，从0开始       
+ 213   1          ADXL345_Start();                          //起始信号
+ 214   1          ADXL345_SendByte(SlaveAddress+1);         //发送设备地址+读信号
+ 215   1          REG_data=ADXL345_RecvByte();              //读出寄存器数据
+ 216   1              ADXL345_SendACK(1);   
+ 217   1              ADXL345_Stop();                           //停止信号
+ 218   1          return REG_data; 
+ 219   1      }
+ 220          //*********************************************************
+ 221          //
+ 222          //连续读出ADXL345内部加速度数据，地址范围0x32~0x37
+ 223          //
+ 224          //*********************************************************
+ 225          void Multiple_read_ADXL345(void)
+ 226          {   uchar i;
+ 227   1          ADXL345_Start();                          //起始信号
+ 228   1          ADXL345_SendByte(SlaveAddress);           //发送设备地址+写信号
+ 229   1          ADXL345_SendByte(0x32);                   //发送存储单元地址，从0x32开始    
+ 230   1          ADXL345_Start();                          //起始信号
+ 231   1          ADXL345_SendByte(SlaveAddress+1);         //发送设备地址+读信号
+ 232   1               for (i=0; i<6; i++)                      //连续读取6个地址数据，存储中BUF
+ 233   1          {
+ 234   2              BUF[i] = ADXL345_RecvByte();          //BUF[0]存储0x32地址中的数据
+ 235   2              if (i == 5)
+ 236   2              {
+ 237   3                 ADXL345_SendACK(1);                //最后一个数据需要回NOACK
+ 238   3              }
+ 239   2              else
+ 240   2              {
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 5   
+
+ 241   3                ADXL345_SendACK(0);                //回应ACK
+ 242   3             }
+ 243   2         }
+ 244   1          ADXL345_Stop();                          //停止信号
+ 245   1          delay15ms();
+ 246   1      }
+ 247          
+ 248          
+ 249          //*****************************************************************
+ 250          
+ 251          //初始化ADXL345，根据需要请参考pdf进行修改************************
+ 252          void Init_ADXL345()
+ 253          {
+ 254   1         Single_Write_ADXL345(0x31,0x0B);   //测量范围,正负16g，13位模式
+ 255   1         Single_Write_ADXL345(0x2C,0x08);   //速率设定为12.5 参考pdf13页
+ 256   1         Single_Write_ADXL345(0x2D,0x08);   //选择电源模式   参考pdf24页
+ 257   1         Single_Write_ADXL345(0x2E,0x80);   //使能 DATA_READY 中断
+ 258   1         Single_Write_ADXL345(0x1E,0x00);   //X 偏移量 根据测试传感器的状态写入pdf29页
+ 259   1         Single_Write_ADXL345(0x1F,0x00);   //Y 偏移量 根据测试传感器的状态写入pdf29页
+ 260   1         Single_Write_ADXL345(0x20,0x05);   //Z 偏移量 根据测试传感器的状态写入pdf29页
+ 261   1      }
+ 262          //***********************************************************************
+ 263          //显示x轴
+ 264          void display_x()
+ 265          {   float temp;
+ 266   1          dis_data=(BUF[1]<<8)+BUF[0];  //合成数据   
+ 267   1              if(dis_data<0){
+ 268   2              dis_data=-dis_data;
+ 269   2         // DisplayOneChar(10,0,'-');      //显示正负符号位
+ 270   2              }
+ 271   1              //else DisplayOneChar(10,0,' '); //显示空格
+ 272   1          
+ 273   1          temp=(float)dis_data*3.9;  //计算数据和显示,查考ADXL345快速入门第4页
+ 274   1              if(temp>400)
+ 275   1              {
+ 276   2                LED=0;
+ 277   2              }
+ 278   1              else
+ 279   1              {
+ 280   2                       LED=1; 
+ 281   2              }
+ 282   1          conversion(temp);          //转换出显示需要的数据
+ 283   1              /*      DisplayOneChar(8,0,'X');
+ 284   1          DisplayOneChar(9,0,':'); 
+ 285   1          DisplayOneChar(11,0,qian); 
+ 286   1                      DisplayOneChar(12,0,'.'); 
+ 287   1          DisplayOneChar(13,0,bai); 
+ 288   1          DisplayOneChar(14,0,shi); 
+ 289   1                      DisplayOneChar(15,0,' ');
+ 290   1      */      
+ 291   1      }
+ 292          
+ 293          //***********************************************************************
+ 294          //显示y轴
+ 295          void display_y()
+ 296          {     float temp;
+ 297   1          dis_data=(BUF[3]<<8)+BUF[2];  //合成数据   
+ 298   1              if(dis_data<0){
+ 299   2              dis_data=-dis_data;}
+ 300   1              
+ 301   1              
+ 302   1         /*DisplayOneChar(2,1,'-');      //显示正负符号位
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 6   
+
+ 303   1              
+ 304   1              else DisplayOneChar(2,1,' '); //显示空格
+ 305   1      */
+ 306   1              
+ 307   1          temp=(float)dis_data*3.9;  //计算数据和显示,查考ADXL345快速入门第4页
+ 308   1              if(temp>400)
+ 309   1              {
+ 310   2                LED=0;
+ 311   2              }
+ 312   1              else
+ 313   1              {
+ 314   2                       LED=1; 
+ 315   2              }
+ 316   1          conversion(temp);          //转换出显示需要的数据
+ 317   1              /*      DisplayOneChar(0,1,'Y');   //第1行，第0列 显示y
+ 318   1          DisplayOneChar(1,1,':'); 
+ 319   1          DisplayOneChar(3,1,qian); 
+ 320   1                      DisplayOneChar(4,1,'.'); 
+ 321   1          DisplayOneChar(5,1,bai); 
+ 322   1          DisplayOneChar(6,1,shi);  
+ 323   1                      DisplayOneChar(7,1,' ');*/  
+ 324   1      }
+ 325          
+ 326          //***********************************************************************
+ 327          //显示z轴
+ 328          void display_z()
+ 329          {
+ 330   1          float temp;
+ 331   1          dis_data=(BUF[5]<<8)+BUF[4];    //合成数据   
+ 332   1              if(dis_data<0){
+ 333   2              dis_data=-dis_data;
+ 334   2      //    DisplayOneChar(10,1,'-');       //显示负符号位
+ 335   2              }
+ 336   1              //else DisplayOneChar(10,1,' ');  //显示空格
+ 337   1         
+ 338   1          temp=(float)dis_data*3.9;  //计算数据和显示,查考ADXL345快速入门第4页
+ 339   1          conversion(temp);          //转换出显示需要的数据           
+ 340   1                if(qian=='1')
+ 341   1                      {
+ 342   2                         GSM_TEXT();
+ 343   2             GSM_TEXT_SMS();
+ 344   2                      
+ 345   2                      }
+ 346   1                SendString2(a);
+ 347   1                SendString2("\r\n");  
+ 348   1              /*      DisplayOneChar(8,1,'Z');  //第0行，第10列 显示Z
+ 349   1          DisplayOneChar(9,1,':'); 
+ 350   1          DisplayOneChar(11,1,qian); 
+ 351   1                      DisplayOneChar(12,1,'.'); 
+ 352   1          DisplayOneChar(13,1,bai); 
+ 353   1          DisplayOneChar(14,1,shi); 
+ 354   1                      DisplayOneChar(15,1,' ');  */
+ 355   1      }
+ 356          
+ 357          
+ 358          //*********************************************************
+ 359          //******主程序********
+ 360          //*********************************************************
+ 361          void ADXL345_deal()
+ 362          { 
+ 363   1              uchar devid;
+ 364   1              delay1(500);                            //上电延时              
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 7   
+
+ 365   1              //InitLcd();                      //液晶初始化ADXL345
+ 366   1              
+ 367   1      /*      DisplayOneChar(0,0,'A');
+ 368   1              DisplayOneChar(1,0,'D'); 
+ 369   1              DisplayOneChar(2,0,'X'); 
+ 370   1              DisplayOneChar(3,0,'L'); 
+ 371   1              DisplayOneChar(4,0,'3'); 
+ 372   1              DisplayOneChar(5,0,'4');  
+ 373   1              DisplayOneChar(6,0,'5');
+ 374   1              
+ 375   1              //Init_ADXL345();                       //初始化ADXL345
+ 376   1              //devid=Single_Read_ADXL345(0X00);      //读出的数据为0XE5,表示正确
+ 377   1               
+ 378   1                      DisplayOneChar(0,0,'A');
+ 379   1                      DisplayOneChar(1,0,'D'); 
+ 380   1                      DisplayOneChar(2,0,'X'); 
+ 381   1                      DisplayOneChar(3,0,'L'); 
+ 382   1                      DisplayOneChar(4,0,'3'); 
+ 383   1                      DisplayOneChar(5,0,'4');  
+ 384   1                      DisplayOneChar(6,0,'5'); */ 
+ 385   1              
+ 386   1                      Init_ADXL345();                         //初始化ADXL345
+ 387   1                      devid=Single_Read_ADXL345(0X00);        //读出的数据为0XE5,表示正确
+ 388   1                      if(devid!=0XE5)
+ 389   1                      {                       P2=0x00;
+ 390   2                              /*DisplayOneChar(8,0,'N');
+ 391   2                              DisplayOneChar(9,0,'o');                
+ 392   2                              DisplayOneChar(10,0,' ');               
+ 393   2                              DisplayOneChar(11,0,'F');
+ 394   2                              DisplayOneChar(12,0,'i');
+ 395   2                              DisplayOneChar(13,0,'n');
+ 396   2                              DisplayOneChar(14,0,'d');               
+ 397   2                              DisplayOneChar(15,0,'!');               
+ 398   2                              //
+ 399   2                              DisplayOneChar(0,1,' ');   //第1行，第0列 显示y
+ 400   2                              DisplayOneChar(1,1,' '); 
+ 401   2                              DisplayOneChar(2,1,' ');        
+ 402   2                              DisplayOneChar(3,1,' '); 
+ 403   2                              DisplayOneChar(4,1,' '); 
+ 404   2                              DisplayOneChar(5,1,' '); 
+ 405   2                              DisplayOneChar(6,1,' ');  
+ 406   2                              DisplayOneChar(7,1,' ');  
+ 407   2                              DisplayOneChar(8,1,' ');  //第0行，第10列 显示Z
+ 408   2                              DisplayOneChar(9,1,' '); 
+ 409   2                              DisplayOneChar(11,1,' '); 
+ 410   2                              DisplayOneChar(12,1,' '); 
+ 411   2                              DisplayOneChar(13,1,' '); 
+ 412   2                              DisplayOneChar(14,1,' '); 
+ 413   2                              DisplayOneChar(15,1,' ');*/                     
+ 414   2                              
+ 415   2                      }
+ 416   1                      else
+ 417   1                      {                       
+ 418   2                              Multiple_Read_ADXL345();        //连续读出数据，存储在BUF中
+ 419   2                              display_x();                    //---------显示X轴
+ 420   2                              display_y();                    //---------显示Y轴
+ 421   2                              display_z();                                    //---------显示Z轴      
+ 422   2                      
+ 423   2                      }      
+ 424   1                      //delay1(350);                          //延时  
+ 425   1              
+ 426   1      } 
+C51 COMPILER V9.60.0.0   ADLX345                                                           03/19/2021 09:49:50 PAGE 8   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    888    ----
+   CONSTANT SIZE    =      3    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =     23       8
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,11 @@
+"STARTUP.obj",
+"main.obj",
+"key.obj",
+"keyscan.obj",
+"usart.obj",
+"DS1302.obj",
+"iic.obj",
+"onewire.obj" 
+TO "13139463" 
+RAMSIZE(256) 
+DISABLEWARNING (16) 

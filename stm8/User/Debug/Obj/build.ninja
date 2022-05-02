@@ -1,0 +1,41 @@
+#Generating source browse information for project MyRoom
+
+
+#Abbreviations
+cc = D$:\ruanjian\common\bin\SourceIndexer.exe
+ll = D$:\ruanjian\common\bin\PbdLink.exe
+bd = D$:\ruanjian\common\bin\makeBrowseData.exe
+
+
+
+#Rules
+rule index
+  depfile = $out.dep
+  command = $cc -out=$out -f $in
+rule link
+  command = $ll -M $out $in
+rule browsedata
+  command = $bd $in -output  $out
+
+
+
+#Build steps
+build buzz.pbi : index buzz.xcl
+build key.pbi : index key.xcl
+build lcd1602.pbi : index lcd1602.xcl
+build led.pbi : index led.xcl
+build sys.pbi : index sys.xcl
+build timer2.pbi : index timer2.xcl
+build timer3.pbi : index timer3.xcl
+build timer4.pbi : index timer4.xcl
+build uart1.pbi : index uart1.xcl
+build uart3.pbi : index uart3.xcl
+build main.pbi : index main.xcl
+build MyRoom_part0.pbi : link buzz.pbi key.pbi lcd1602.pbi
+build MyRoom_part1.pbi : link led.pbi sys.pbi timer2.pbi
+build MyRoom_part2.pbi : link timer3.pbi timer4.pbi uart1.pbi
+build MyRoom_part3.pbi : link uart3.pbi main.pbi
+build MyRoom.pbd : link MyRoom_part0.pbi MyRoom_part1.pbi MyRoom_part2.pbi MyRoom_part3.pbi
+build MyRoom.pbw : browsedata MyRoom.pbd
+
+

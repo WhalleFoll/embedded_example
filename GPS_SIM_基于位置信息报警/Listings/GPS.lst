@@ -1,0 +1,383 @@
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE GPS
+OBJECT MODULE PLACED IN .\Objects\GPS.obj
+COMPILER INVOKED BY: D:\51\C51\BIN\C51.EXE GPS.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\GP
+                    -S.lst) OBJECT(.\Objects\GPS.obj)
+
+line level    source
+
+   1          
+   2          #include "GPS.h"
+   3          
+   4          //¶¨Òå±äÁ¿
+   5          unsigned char KEY_NUM = 0;
+   6          bit Page = 0;
+   7          unsigned char xdata Display_GPGGA_Buffer[68];
+   8          unsigned char xdata Display_GPRMC_Buffer[68];
+   9          bit Flag_OV = 0;
+  10          bit Flag_Calc_GPGGA_OK = 0;
+  11          bit Flag_Calc_GPRMC_OK = 0;
+  12          unsigned char RX_Buffer[72];
+  13          unsigned char RX_Count = 0;
+  14          unsigned char Hour = 0,Min_High = 0,Min_Low = 0,Sec_High = 0,Sec_Low = 0,Min_Low1 = 0;
+  15          unsigned char Month = 0,Day = 0,Month_High = 0, Month_Low = 0,Day_Low = 0 ,Day_High = 0, Year_High = 0,Yea
+             -r_Low = 0;
+  16          unsigned int Year = 0;
+  17          bit Flag_GPS_OK = 0;
+  18          unsigned char MaxDay = 0;
+  19          
+  20          unsigned char code SMS_send_front[]="Éè±¸ÏÖÔÚËù´¦µÄÎ»ÖÃ";
+  21          void N_S_deal(void);
+  22          void E_W_deal(void);
+  23          //****************************************************
+  24          //Ö÷º¯Êý
+  25          //****************************************************
+  26          void GPS_deal()
+  27          {
+  28   1              unsigned char i = 0;
+  29   1        //ES=0;
+  30   1      //         GSM_TEXT();
+  31   1      //     SendString2(SMS_send_3);
+  32   1      //         SendString2(PhoneCall_11);
+  33   1      //     SendString2("\r\n");   //·¢ËÍ»Ø³µ
+  34   1      //     Delay_ms(3000);  
+  35   1      //         SendString2(SMS_send_front);
+  36   1      //      SendString2("\r\n");
+  37   1           //SendData2('1');
+  38   1                      if(Flag_GPS_OK == 1 && RX_Buffer[4] == 'G' && RX_Buffer[6] == ',' && RX_Buffer[13] == '.')                      //È·¶¨ÊÇ·ñÊ
+             -Õµ½"GPGGA"ÕâÒ»Ö¡Êý¾Ý
+  39   1                      {
+  40   2                              for( i = 0; i < 68 ; i++)
+  41   2                              {
+  42   3                                      Display_GPGGA_Buffer[i] = RX_Buffer[i]; 
+  43   3                              }
+  44   2                              Hour = (Display_GPGGA_Buffer[7]-0x30)*10+(Display_GPGGA_Buffer[8]-0x30)+8;                      //UTCÊ±¼ä×ª»»µ½±±¾©Ê±¼ä         U
+             -TC+8
+  45   2                                                                                                                                                                                                      //0x30ÎªASCII×ª»»ÎªÊý×Ö
+  46   2                              if( Hour >= 24)                         //Òç³ö
+  47   2                              {
+  48   3                                      Hour %= 24;                             //»ñÈ¡µ±Ç°Hour
+  49   3                                      Flag_OV = 1;                    //ÈÕÆÚ½øÎ»
+  50   3                              }
+  51   2                              else
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 2   
+
+  52   2                              {
+  53   3                                      Flag_OV = 0;
+  54   3                              }
+  55   2      
+  56   2                              Min_High = Display_GPGGA_Buffer[9];
+  57   2                              Min_Low = Display_GPGGA_Buffer[10];
+  58   2              
+  59   2                              Sec_High = Display_GPGGA_Buffer[11];
+  60   2                              Sec_Low = Display_GPGGA_Buffer[12];
+  61   2      
+  62   2                              Flag_Calc_GPGGA_OK = 1;
+  63   2                      }
+  64   1      
+  65   1                      if(Flag_Calc_GPGGA_OK == 1)
+  66   1                      {
+  67   2                              Flag_Calc_GPGGA_OK = 0;
+  68   2                  
+  69   2           //SendData2('1');
+  70   2                              SendString2("\r\n");
+  71   2      //                      SendString2("TIME: \r\n");
+  72   2      
+  73   2      //                      SendData2(Hour/10+0x30);
+  74   2      //                      SendData2(Hour%10+0x30);
+  75   2      
+  76   2      //                      SendData2(':');
+  77   2      
+  78   2      //                      SendData2(Min_High);
+  79   2      //                      SendData2(Min_Low);
+  80   2      
+  81   2      //                      SendData2(':');
+  82   2      //      
+  83   2      //                      SendData2(Sec_High);
+  84   2      //                      SendData2(Sec_Low);
+  85   2      //      Delay_ms(1000);
+  86   2      //                      SendString2("\r\n");
+  87   2      //                      SendString2("HIGH: ");
+  88   2      //                      SendData2(Display_GPGGA_Buffer[54]);    
+  89   2      //                      SendData2(Display_GPGGA_Buffer[55]);    
+  90   2      //                      SendData2(Display_GPGGA_Buffer[56]);    
+  91   2      //                      SendData2(Display_GPGGA_Buffer[57]);
+  92   2      //                      SendString2("m\r\n");
+  93   2                              if((Min_Low-Min_Low1)>=1)
+  94   2                              {
+  95   3                              GSM_TEXT();
+  96   3                              SendString2(SMS_send_front);
+  97   3                              SendString2("\r\n");
+  98   3                              //Delay_ms(3000);
+  99   3          
+ 100   3                 // SendData2(Min_Low);
+ 101   3                              //Delay_ms(3000);
+ 102   3                              if(Display_GPGGA_Buffer[28]=='N')//N »òÕß S
+ 103   3                              {       
+ 104   4                                      SendString2("±±Î³:");
+ 105   4                                              
+ 106   4            }
+ 107   3                              else SendString2("ÄÏÎ³:");                              
+ 108   3                              N_S_deal();
+ 109   3                              SendString2("\r\n");    
+ 110   3      //Delay_ms(3000);                       
+ 111   3            if(Display_GPGGA_Buffer[42]=='E') //E »òÕß W
+ 112   3                              {       
+ 113   4                                      SendString2("¶«¾­:");           
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 3   
+
+ 114   4            }
+ 115   3                              else SendString2("Î÷¾­:");      
+ 116   3                        E_W_deal();
+ 117   3                              SendString2("\r\n");
+ 118   3                              //Delay_ms(1000);
+ 119   3            SendData2(0x1a);  //·¢ËÍ¶ÌÏ¢ÄÚÈÝ½áÊø·û¶ÔÓ¦µÄASCIIÎª0x1a
+ 120   3                              SendString2("\r\n");
+ 121   3            ES=1;  
+ 122   3                              
+ 123   3                      }                       
+ 124   2                              Min_Low1=Min_Low;
+ 125   2                              if(Min_Low==9)
+ 126   2                                      Min_Low1=0;
+ 127   2                      }
+ 128   1                      
+ 129   1                      if(Flag_GPS_OK == 1 && RX_Buffer[4] == 'M' && RX_Buffer[52] == ',' && RX_Buffer[59] == ',')                     //È·¶¨ÊÇ·ñ
+             -ÊÕµ½"GPRMC"ÕâÒ»Ö¡Êý¾Ý
+ 130   1                      {
+ 131   2                              for( i = 0; i < 68 ; i++)
+ 132   2                              {
+ 133   3                                      Display_GPRMC_Buffer[i] = RX_Buffer[i]; 
+ 134   3                              }
+ 135   2      
+ 136   2                              Year_High = Display_GPRMC_Buffer[57];
+ 137   2                              Year_Low = Display_GPRMC_Buffer[58];
+ 138   2      
+ 139   2                              Month_High = Display_GPRMC_Buffer[55];
+ 140   2                              Month_Low = Display_GPRMC_Buffer[56];
+ 141   2      
+ 142   2                              Day_High = Display_GPRMC_Buffer[53];
+ 143   2                              Day_Low = Display_GPRMC_Buffer[54];
+ 144   2      
+ 145   2      
+ 146   2                              if(Flag_OV == 1)                        //ÓÐ½øÎ»
+ 147   2                              {
+ 148   3                                      UTCDate2LocalDate();                    //UTCÈÕÆÚ×ª»»Îª±±¾©Ê±¼ä         
+ 149   3                              }
+ 150   2      
+ 151   2                              Flag_Calc_GPRMC_OK = 1;
+ 152   2                      }
+ 153   1      
+ 154   1                      if(Flag_Calc_GPRMC_OK == 1)
+ 155   1                      {
+ 156   2                              Flag_Calc_GPRMC_OK = 0;
+ 157   2      
+ 158   2      //                      SendString2("20");
+ 159   2      //                      SendData2(Year_High);
+ 160   2      //                      SendData2(Year_Low);
+ 161   2      //                      SendData2('-');
+ 162   2      //      
+ 163   2      //                      SendData2(Month_High);
+ 164   2      //                      SendData2(Month_Low);
+ 165   2      //                      SendData2('-');
+ 166   2      //      
+ 167   2      //                      SendData2(Day_High);
+ 168   2      //                      SendData2(Day_Low);
+ 169   2      
+ 170   2      //                      SendString2("\r\n");
+ 171   2      //                      
+ 172   2      //                      
+ 173   2      //                      SendString2("Speed:");                  
+ 174   2      
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 4   
+
+ 175   2      //                      SendData2(Display_GPRMC_Buffer[46]);            
+ 176   2      //                      SendData2(Display_GPRMC_Buffer[47]);            
+ 177   2      //                      SendData2(Display_GPRMC_Buffer[48]);                    
+ 178   2      //                      SendData2(Display_GPRMC_Buffer[49]);    
+ 179   2      //                      SendData2(Display_GPRMC_Buffer[50]);
+ 180   2      //                      
+ 181   2      //                      SendString2("\r\n");                    
+ 182   2                      }               
+ 183   1              //SendData2('2');
+ 184   1                       //SendData2(0x1a);  //·¢ËÍ¶ÌÏ¢ÄÚÈÝ½áÊø·û¶ÔÓ¦µÄASCIIÎª0x1a
+ 185   1      //     ES=1;
+ 186   1      //      Delay_ms(1000);
+ 187   1      //     Delay_ms(5000);   
+ 188   1      }
+ 189          //****************************************************
+ 190          //UTCÈÕÆÚÓëµ±µØÈÕÆÚ×ª»»
+ 191          //****************************************************
+ 192          void UTCDate2LocalDate(void)
+ 193          {
+ 194   1              Day = (Day_High - 0x30) * 10 + (Day_Low-0x30) + 1;              //ÈÕ  ¼ÓÒ»
+ 195   1              Month = (Month_High - 0x30) * 10 + (Month_Low - 0x30);
+ 196   1              Year = 2000 + (Year_High - 0x30) * 10 + (Year_Low - 0x30);
+ 197   1              
+ 198   1              MaxDay = GetMaxDay(Month,Year);                         //»ñÈ¡µ±ÔÂ ÌìÊý ×î´óÖµ
+ 199   1              if(Day > MaxDay)                //Òç³ö
+ 200   1              {
+ 201   2                      Day = 1;
+ 202   2                      Month += 1;
+ 203   2                      if(Month > 12)
+ 204   2                      {
+ 205   3                              Year+=1;
+ 206   3                      }
+ 207   2              }
+ 208   1      
+ 209   1              Day_High = Day/10 + 0x30;                               //×ª»»ÈÕÆÚÖµÎªASCII
+ 210   1              Day_Low = Day%10 + 0x30;
+ 211   1      
+ 212   1              Month_High = Month/10 + 0x30;                   //×ª»»ÔÂ·ÝÖµÎªASCII
+ 213   1              Month_Low = Month%10 + 0x30;
+ 214   1      
+ 215   1              Year_High = Year%100/10 + 0x30;                 //×ª»»Äê·ÝÖµÎªASCII
+ 216   1              Year_Low = Year%10 + 0x30;                      
+ 217   1      }
+ 218          
+ 219          //****************************************************
+ 220          //»ñÈ¡µ±ÔÂÈÕÆÚ×î´óÖµ
+ 221          //****************************************************
+ 222          unsigned char GetMaxDay(unsigned char Month_Value,unsigned int Year_Value)
+ 223          {
+ 224   1              unsigned char iDays;
+ 225   1              switch(Month_Value)
+ 226   1              {
+ 227   2                      case 1:
+ 228   2                      case 3:
+ 229   2                      case 5:
+ 230   2                      case 7:
+ 231   2                      case 8:
+ 232   2                      case 10:
+ 233   2                      case 12:
+ 234   2                              {
+ 235   3                                      iDays = 31;
+ 236   3                              }
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 5   
+
+ 237   2                              break;
+ 238   2                      case 2:
+ 239   2                              {
+ 240   3                                      //2ÔÂ·Ý±È½ÏÌØÊâ£¬ÐèÒª¸ù¾ÝÊÇ²»ÊÇÈòÄêÀ´ÅÐ¶Ïµ±ÔÂÊÇ28Ìì»¹29Ìì
+ 241   3                                      iDays = IsLeapYear(Year_Value)?29:28;
+ 242   3                              }
+ 243   2                              break;
+ 244   2                      case 4:
+ 245   2                      case 6:
+ 246   2                      case 9:
+ 247   2                      case 11:
+ 248   2                              {
+ 249   3                                      iDays = 30;
+ 250   3                              }
+ 251   2                              break;
+ 252   2                      default : break;
+ 253   2              }
+ 254   1              return(iDays);                                          
+ 255   1      }
+ 256          
+ 257          //****************************************************
+ 258          //ÈòÄê¼ì²â
+ 259          //****************************************************
+ 260          bit IsLeapYear(unsigned int uiYear)
+ 261          {
+ 262   1              return (((uiYear%4)==0)&&((uiYear%100)!=0))||((uiYear%400)==0);
+ 263   1      }
+ 264          
+ 265          
+ 266          //****************************************************
+ 267          //MSÑÓÊ±º¯Êý(12M¾§ÕñÏÂ²âÊÔ)
+ 268          //****************************************************
+ 269          void Delay_ms(unsigned int n)
+ 270          {
+ 271   1              unsigned int  i,j;
+ 272   1              for(i=0;i<n;i++)
+ 273   1                      for(j=0;j<123;j++);
+ 274   1      }
+ 275          
+ 276          void N_S_deal(void)
+ 277          {
+ 278   1        unsigned long int sum,x1,x2,x3;
+ 279   1              unsigned char s1,s2,s3,s4,s5,s6,s7,s8,s9,s10;
+ 280   1                                      
+ 281   1            x1=(Display_GPGGA_Buffer[17]-0x30)*10+(Display_GPGGA_Buffer[18]-0x30);
+ 282   1            x2=((Display_GPGGA_Buffer[19]-0x30)*10+(Display_GPGGA_Buffer[20]-0x30))/60.0*100000;
+ 283   1                  x3=(((Display_GPGGA_Buffer[22]-0x30)*0.1+(Display_GPGGA_Buffer[23]-0x30)*0.01+(Display_GPGGA_Buffer[2
+             -4]-0x30)*0.001+(Display_GPGGA_Buffer[25]-0x30)*0.0001+(Display_GPGGA_Buffer[26]-0x30)*0.00001)/60.0)*10000000;
+ 284   1            sum=x1*100000000+x2*1000+x3*10;
+ 285   1                 
+ 286   1                  s1=sum/1000000000+0x30;
+ 287   1                  s2=sum%1000000000/100000000+0x30; 
+ 288   1                  s3=sum%100000000/10000000+0x30;
+ 289   1                  s4=sum%10000000/1000000+0x30;
+ 290   1                  s5=sum%1000000/100000+0x30;
+ 291   1                  s6=sum%100000/10000+0x30;
+ 292   1                  s7=sum%10000/1000+0x30;
+ 293   1                  s8=sum%1000/100+0x30;
+ 294   1                  s9=sum%100/10+0x30;
+ 295   1                  s10=sum%10;
+ 296   1                  SendData2(s1);                      //Î³¶È
+ 297   1                              SendData2(s2);                  //Î³¶È
+C51 COMPILER V9.60.0.0   GPS                                                               03/16/2021 21:39:31 PAGE 6   
+
+ 298   1                              SendData2('.');                 //Î³¶È
+ 299   1                              SendData2(s3);                  //Î³¶È
+ 300   1                              SendData2(s4);                  //Î³¶È                  
+ 301   1                              SendData2(s5);                  //Î³¶È
+ 302   1                              SendData2(s6);                  //Î³¶È
+ 303   1                              SendData2(s7);                  //Î³¶È
+ 304   1                              SendData2(s8);                  //Î³¶È
+ 305   1                              SendData2(s9);                  //Î³¶È
+ 306   1                              //SendData2(s10);                       //Î³¶È                  
+ 307   1                  
+ 308   1      }
+ 309          void E_W_deal(void)
+ 310          {
+ 311   1        unsigned long int sum,x1,x2,x3;
+ 312   1              unsigned char s1,s2,s3,s4,s5,s6,s7,s8,s9,s10;           
+ 313   1            x1=(Display_GPGGA_Buffer[30]-0x30)*100+(Display_GPGGA_Buffer[31]-0x30)*10+(Display_GPGGA_Buffer[32]-
+             -0x30);
+ 314   1            x2=((Display_GPGGA_Buffer[33]-0x30)*10+(Display_GPGGA_Buffer[34]-0x30))/60.0*10000000;
+ 315   1                  x3=(((Display_GPGGA_Buffer[36]-0x30)*0.1+(Display_GPGGA_Buffer[37]-0x30)*0.01+(Display_GPGGA_Buffer[3
+             -8]-0x30)*0.001+(Display_GPGGA_Buffer[39]-0x30)*0.0001+(Display_GPGGA_Buffer[40]-0x30)*0.00001)/60.0)*10000000;
+ 316   1            sum=x1*10000000+x2+x3;        
+ 317   1                  s1=sum/1000000000+0x30;
+ 318   1                  s2=sum%1000000000/100000000+0x30; 
+ 319   1                  s3=sum%100000000/10000000+0x30;
+ 320   1                  s4=sum%10000000/1000000+0x30;
+ 321   1                  s5=sum%1000000/100000+0x30;
+ 322   1                  s6=sum%100000/10000+0x30;
+ 323   1                  s7=sum%10000/1000+0x30;
+ 324   1                  s8=sum%1000/100+0x30;
+ 325   1                  s9=sum%100/10+0x30;   
+ 326   1            s10=sum%10+0x30;
+ 327   1                  SendData2(s1);                      //¾­¶È
+ 328   1                              SendData2(s2);  
+ 329   1                              SendData2(s3);
+ 330   1                  SendData2('.');     //('.')         
+ 331   1                              SendData2(s4);                  //¾­¶È
+ 332   1                              SendData2(s5);
+ 333   1                              
+ 334   1                              SendData2(s6);  
+ 335   1                              SendData2(s7);
+ 336   1                              SendData2(s8);  
+ 337   1                              SendData2(s9);
+ 338   1                              SendData2(s10);
+ 339   1      
+ 340   1      }
+ 341          
+ 342          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2824    ----
+   CONSTANT SIZE    =     46    ----
+   XDATA SIZE       =    136    ----
+   PDATA SIZE       =     91      54
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      5    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

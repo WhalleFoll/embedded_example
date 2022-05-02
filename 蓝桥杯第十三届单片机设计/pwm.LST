@@ -1,0 +1,86 @@
+C51 COMPILER V9.00   PWM                                                                   04/09/2022 08:39:47 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE PWM
+OBJECT MODULE PLACED IN pwm.OBJ
+COMPILER INVOKED BY: C:\k4\C51\BIN\C51.EXE pwm.c BROWSE INCDIR(.\lib) DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include "pwm.h"
+   2          /*
+   3          void Init_Timer0()
+   4          {
+   5                  TMOD = 0x01;                    //16位定时模式
+   6                  TH0 = (65536 - 100) / 256;      //定时50ms
+   7                  TL0 = (65536 - 100) % 256;
+   8                  ET0 = 1;                       //使能定时器T0中断
+   9                  EA = 1;                       //使能总中断        
+  10                  //TR0 = 1;                    //启动定时器T0
+  11          }
+  12          
+  13          void SeviceTimer0() interrupt 1
+  14          {
+  15                  TH0 = (65536 - 100) / 256;
+  16                  TL0 = (65536 - 100) % 256;
+  17                  n++;
+  18                        if(n<=pwm){ 
+  19                     led=0;
+  20                                          }
+  21                                          else if(pwm<n) {
+  22                                            led=1;
+  23                                           
+  24                                          }
+  25                                  else if(n>100)
+  26                                  {
+  27                                   n=0;
+  28                                  }
+  29                                          
+  30          }
+  31          
+  32          */
+  33          
+  34          /*方法二*/
+  35          /*
+  36          void Timer0Init(void)           //100微秒@11.0592MHz pwm频率100hz 周期0.01s 10ms 10000us=100us*100
+  37          {
+  38                  AUXR |= 0x80;           //定时器时钟1T模式
+  39                  TMOD &= 0xF0;           //设置定时器模式
+  40                  TL0 = 0xAE;             //设置定时初值
+  41                  TH0 = 0xFB;             //设置定时初值
+  42                  TF0 = 0;                //清除TF0标志
+  43                  TR0 = 1;                //定时器0开始计时
+  44          }
+  45          
+  46          void Timer0()   interrupt 1
+  47          {
+  48                  tt++;
+  49                  if(tt==pwm_num)
+  50                  {
+  51                    P00=1;
+  52                  }
+  53                  else if(tt==100)
+  54                  {
+  55                          P00=0;
+C51 COMPILER V9.00   PWM                                                                   04/09/2022 08:39:47 PAGE 2   
+
+  56                    tt=0;
+  57                  }
+  58          }
+  59          
+  60          
+  61          */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

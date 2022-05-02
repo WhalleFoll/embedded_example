@@ -1,0 +1,48 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              10/31/2021 17:35:01 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\51\C51\BIN\C51.EXE main.c COMPACT OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\m
+                    -ain.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "uart_init.h"
+   2          #include <ADLX345.h>
+   3          #include <GPS.h>
+   4          sbit k1=P3^3;    //定义P33口是wifi
+   5          sbit k2=P3^2;    //定义P31口是k2
+   6          sbit Le= P3^4; //返回Arduino
+   7          void main()
+   8          {
+   9   1          uart1_init();
+  10   1          uart2_init();
+  11   1               
+  12   1          while(1)
+  13   1                      {  
+  14   2                              //ADXL345_deal();
+  15   2                              Le=1;
+  16   2                              if(k1==0)                 //检测按键K1是否按下
+  17   2                              {
+  18   3                                  //ADXL345_deal();                                    
+  19   3                      GPS_deal();
+  20   3                                      Le=0;
+  21   3                          
+  22   3                      }
+  23   2                      }
+  24   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     18    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
